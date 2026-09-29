@@ -6,7 +6,7 @@ import nest_asyncio
 import base64
 from dotenv import load_dotenv
 from job_agents import run_analysis
-from mcp_server import wait_for_initialization, get_mcp_server
+from mcp_server import open_mcp_server
 
 nest_asyncio.apply()
 load_dotenv()
@@ -26,13 +26,11 @@ if 'analysis_result' not in st.session_state:
 if 'is_analyzing' not in st.session_state:
     st.session_state.is_analyzing = False
 
-async def analyze_profile(linkedin_url: str):
+async def analyze_profile(linkedin_url: str, nebius_key: str, bright_data_key: str, browser_auth: str):
     try:
-        if not await wait_for_initialization():
-            st.error("Failed to initialize MCP server")
-            return
-            
-        result = await run_analysis(get_mcp_server(), linkedin_url)
+        # A fresh MCP server per run, using this visitor's own credentials.
+        async with open_mcp_server(bright_data_key, browser_auth or None) as server:
+            result = await run_analysis(server, linkedin_url, nebius_key)
         st.session_state.analysis_result = result
     except Exception as e:
         logger.error(f"Error analyzing LinkedIn profile: {str(e)}")
@@ -60,7 +58,10 @@ def main():
     # Sidebar
     with st.sidebar:
         st.image("./assets/Nebius.png", width=150)
-        api_key = st.text_input("Enter your API key", type="password")
+        st.caption("Keys are used for this session only.")
+        api_key = st.text_input("Nebius API key", type="password")
+        bright_data_key = st.text_input("Bright Data API token", type="password")
+        browser_auth = st.text_input("Bright Data browser auth (optional)", type="password")
         st.divider()
         
         st.subheader("Enter LinkedIn Profile URL")
@@ -70,8 +71,11 @@ def main():
             if not linkedin_url:
                 st.error("Please enter a LinkedIn profile URL")
                 return
-            if not api_key:
-                st.error("Please enter your API key")
+            if not (api_key or os.environ.get("NEBIUS_API_KEY")):
+                st.error("Please enter your Nebius API key")
+                return
+            if not (bright_data_key or os.environ.get("BRIGHT_DATA_API_KEY")):
+                st.error("Please enter your Bright Data API token")
                 return
 
             st.session_state.is_analyzing = True
@@ -80,7 +84,7 @@ def main():
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             try:
-                loop.run_until_complete(analyze_profile(linkedin_url))
+                loop.run_until_complete(analyze_profile(linkedin_url, api_key, bright_data_key, browser_auth))
             finally:
                 loop.close()
 

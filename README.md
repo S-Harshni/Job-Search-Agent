@@ -1,5 +1,12 @@
 # Job Search Agent with Bright Data and Nebius Token Factory
 
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776ab?logo=python&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-UI-ff4b4b?logo=streamlit&logoColor=white)
+![OpenAI Agents SDK](https://img.shields.io/badge/OpenAI_Agents_SDK-multi--agent-412991)
+![MCP](https://img.shields.io/badge/Bright_Data-MCP-3d7eff)
+
+👤 **Portfolio:** [s-harshni.github.io/S-Harshni](https://s-harshni.github.io/S-Harshni/)
+
 ![GIF](./assets/job-search.gif)
 
 A powerful AI-powered job search agent that analyzes LinkedIn profiles and finds relevant job opportunities using Bright Data for web scraping and Nebius Token Factory for intelligent analysis.
@@ -26,6 +33,10 @@ A powerful AI-powered job search agent that analyzes LinkedIn profiles and finds
   - Progress tracking
   - Error handling
 
+## Screenshot
+
+![App](docs/screenshots/app.png)
+
 ## How it Works
 
 ![Gif](./assets/job-search-agent.gif)
@@ -35,6 +46,7 @@ A powerful AI-powered job search agent that analyzes LinkedIn profiles and finds
 Before running this project, make sure you have:
 
 - Python 3.10 or higher
+- Node.js 18+ (the Bright Data MCP server runs via `npx @brightdata/mcp`)
 - A [Bright Data](https://brightdata.com/) account and API credentials
 - [Nebius Token Factory](https://tokenfactory.nebius.com/) account and API key
 
@@ -55,8 +67,8 @@ job_finder_agent/
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/S-Harshni/job-search-agent.git
-cd job_finder_agent
+git clone https://github.com/S-Harshni/Job-Search-Agent.git
+cd Job-Search-Agent
 ```
 
 2. Create a virtual environment:
@@ -78,12 +90,12 @@ uv sync
 
 ## Configuration
 
-Create a `.env` file in the project root with:
+Enter your keys in the app's sidebar. They're used for your session only. Alternatively, create a `.env` file (see `.env.example`) so you don't have to type them:
 
 ```
 NEBIUS_API_KEY="Your Nebius API Key"
 BRIGHT_DATA_API_KEY="Your Bright Data API Key"
-BROWSER_AUTH="Your Bright Data Browser Auth"
+BROWSER_AUTH=""   # optional: enables Bright Data's scraping-browser tools
 ```
 
 ## Usage
@@ -96,7 +108,7 @@ streamlit run app.py
 
 2. Open your browser at http://localhost:8501
 
-3. Enter your Nebius API key in the sidebar
+3. Enter your Nebius API key and Bright Data token in the sidebar
 
 4. Input a LinkedIn profile URL to analyze
 
@@ -121,6 +133,17 @@ streamlit run app.py
 - Leverages Bright Data's MCP server for web scraping
 - Utilizes Nebius Token Factory's Llama-3.3-70B-Instruct model for analysis
 - Implements proper error handling and logging
+
+## Changes in this version
+
+- **Sidebar keys are used.** The Nebius key typed in the UI used to be ignored (the code read only `.env`). The Bright Data token can now be entered in the UI too.
+- **`BROWSER_AUTH` is optional.** The MCP server used to crash on start without it.
+- Each analysis starts its own MCP server with the visitor's credentials and closes it afterwards.
+- Removed `asyncio` from `requirements.txt` (a Python 2-era PyPI package that breaks on Python 3) and added the missing `nest-asyncio`.
+
+## Credits
+
+Based on the Job Finder Agent from [Arindam Majumder's awesome-ai-apps](https://github.com/Arindam200/awesome-ai-apps) (demo GIFs from that project).
 
 ## Contributing
 

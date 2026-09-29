@@ -12,9 +12,12 @@ from openai import AsyncOpenAI
 
 logger = logging.getLogger(__name__)
 
-async def run_analysis(mcp_server: MCPServer, linkedin_url: str):
+async def run_analysis(mcp_server: MCPServer, linkedin_url: str, api_key: str | None = None):
     logger.info(f"Starting analysis for LinkedIn URL: {linkedin_url}")
-    api_key = os.environ["NEBIUS_API_KEY"]
+    # Key from the UI, falling back to the environment (.env) for command-line use.
+    api_key = api_key or os.environ.get("NEBIUS_API_KEY")
+    if not api_key:
+        raise ValueError("A Nebius API key is required.")
     base_url = "https://api.tokenfactory.nebius.com/v1" 
     client = AsyncOpenAI(base_url=base_url, api_key=api_key)
     set_tracing_disabled(disabled=True)
